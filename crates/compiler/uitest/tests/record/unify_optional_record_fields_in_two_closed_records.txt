@@ -3,4 +3,4 @@ app "test" provides [main] to "./platform"
 f : { x ? Str, y ? Str } -> {}
 
 main = f {x : ""}
-#      ^ { x : Str, y ? Str } -[[f(1)]]-> {}
+#      ^ { x ? Str, y ? Str } -[[f(1)]]-> {}

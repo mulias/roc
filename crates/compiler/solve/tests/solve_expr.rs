@@ -3740,6 +3740,24 @@ mod solve_expr {
         );
     }
 
+    // #[test]
+    // fn optional_field_empty() {
+    //     infer_eq(
+    //         indoc!(
+    //             r#"
+    //             fields : { x : Str, y ? Str } -> Str
+    //             fields = \{x} -> x
+
+    //             (
+    //                 "\(fields {x: "A", y: "A"}) \(fields {x: "A"})",
+    //                 fields,
+    //             )
+    //             "#
+    //         ),
+    //         "Fields"
+    //     );
+    // }
+
     #[test]
     fn list_walk_backwards() {
         infer_eq_without_problem(

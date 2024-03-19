@@ -1,0 +1,10 @@
+app "test" provides [main] to "./platform"
+
+f = \r ->
+#    ^ { x : [Blue, Red], y ? Num * }*
+    when r is
+        { x: Blue, y ? 3 } -> y
+        { x: Red, y ? 5 } -> y
+
+main = f { x: Blue, y: 7 }
+#        ^^^^^^^^^^^^^^^^^ { x : [Blue, Red], y ? Num w_a }

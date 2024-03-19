@@ -1,0 +1,10 @@
+app "test" provides [main] to "./platform"
+
+fields : {x : Str, y ? Str } -> Str
+
+main = (
+    fields {x: "A", y: "B"},
+#          ^^^^^^^^^^^^^^^^ { x : Str, y : Str }
+    fields {x: "A"}
+#          ^^^^^^^^ { x : Str, y ? Str }
+)

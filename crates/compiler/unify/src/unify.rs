@@ -390,6 +390,7 @@ pub fn unify_pool<M: MetaCollector>(
     var2: Variable,
     mode: UnificationMode,
 ) -> Outcome<M> {
+    println!("unify_pool");
     if env.equivalent(var1, var2) {
         Outcome::default()
     } else {
@@ -400,6 +401,8 @@ pub fn unify_pool<M: MetaCollector>(
             second_desc: env.get(var2),
             mode,
         };
+
+        // println!("$ {:?} {:?}", pool, ctx);
 
         unify_context(env, pool, ctx)
     }
@@ -473,6 +476,7 @@ fn debug_print_unified_types<M: MetaCollector>(
 
 #[must_use]
 fn unify_context<M: MetaCollector>(env: &mut Env, pool: &mut Pool, ctx: Context) -> Outcome<M> {
+    println!("unify_context");
     #[cfg(debug_assertions)]
     debug_print_unified_types::<M>(env, &ctx, None);
 
@@ -591,6 +595,7 @@ fn check_and_merge_valid_range<M: MetaCollector>(
     range: NumericRange,
     var: Variable,
 ) -> Outcome<M> {
+    println!("check_and_merge_valid_range");
     use Content::*;
     let content = *env.get_content_without_compacting(var);
 
@@ -722,6 +727,8 @@ fn unify_two_aliases<M: MetaCollector>(
     other_args: AliasVariables,
     other_real_var: Variable,
 ) -> Outcome<M> {
+    println!("unify_two_aliases");
+
     if args.len() == other_args.len() {
         let mut outcome = Outcome::default();
 
@@ -853,6 +860,7 @@ fn unify_alias<M: MetaCollector>(
     args: AliasVariables,
     real_var: Variable,
 ) -> Outcome<M> {
+    println!("unify_alias");
     let other_content = &ctx.second_desc.content;
 
     let kind = AliasKind::Structural;
@@ -923,6 +931,7 @@ fn unify_opaque<M: MetaCollector>(
     args: AliasVariables,
     real_var: Variable,
 ) -> Outcome<M> {
+    println!("unify_opaque");
     let other_content = &ctx.second_desc.content;
 
     let kind = AliasKind::Opaque;
@@ -997,6 +1006,7 @@ fn unify_structure<M: MetaCollector>(
     flat_type: &FlatType,
     other: &Content,
 ) -> Outcome<M> {
+    println!("unify_structure");
     match other {
         FlexVar(_) => {
             // If the other is flex, Structure wins!
@@ -1114,6 +1124,7 @@ fn unify_erased_lambda<M: MetaCollector>(
     ctx: &Context,
     other: &Content,
 ) -> Outcome<M> {
+    println!("unify_erased_lamdba");
     match other {
         FlexVar(_) => {
             if M::UNIFYING_SPECIALIZATION {
@@ -1147,6 +1158,7 @@ fn unify_lambda_set<M: MetaCollector>(
     lambda_set: LambdaSet,
     other: &Content,
 ) -> Outcome<M> {
+    println!("unify_lambda_set");
     match other {
         FlexVar(_) => {
             if M::UNIFYING_SPECIALIZATION {
@@ -1283,6 +1295,7 @@ fn separate_union_lambdas<M: MetaCollector>(
     fields1: UnionLambdas,
     fields2: UnionLambdas,
 ) -> Result<(Outcome<M>, SeparatedUnionLambdas), Outcome<M>> {
+    println!("separate_union_lambdas");
     debug_assert!(
         fields1.is_sorted_allow_duplicates(env),
         "not sorted: {:?}",
@@ -1899,7 +1912,10 @@ fn unify_record<M: MetaCollector>(
     fields2: RecordFields,
     ext2: Variable,
 ) -> Outcome<M> {
+    println!("unify_records");
     let (separate, ext1, ext2) = separate_record_fields(env, fields1, ext1, fields2, ext2);
+
+    // println!("]]]]] {:?} {:?} {:?}", separate, ext1, ext2);
 
     let shared_fields = separate.in_both;
 
@@ -2097,6 +2113,7 @@ fn unify_tuple<M: MetaCollector>(
     }
 }
 
+#[derive(Debug)]
 enum OtherFields {
     None,
     Other(RecordFields, RecordFields),
@@ -2119,6 +2136,7 @@ fn unify_shared_fields<M: MetaCollector>(
     let mut whole_outcome = Outcome::default();
 
     for (name, (actual, expected)) in shared_fields {
+        // println!("#### {:?} {:?} {:?}", name, actual, expected);
         let local_outcome = unify_pool(
             env,
             pool,
@@ -2177,6 +2195,8 @@ fn unify_shared_fields<M: MetaCollector>(
                 (RigidRequired(a), RigidRequired(b)) => RigidRequired(choose_merged_var(env, a, b)),
             };
 
+            // println!("''''''''' {:?} {:?}", name, actual);
+
             matching_fields.push((name, actual));
             whole_outcome.union(local_outcome);
         }
@@ -2187,6 +2207,8 @@ fn unify_shared_fields<M: MetaCollector>(
 
         let (ext_fields, new_ext_var) = RecordFields::empty().sorted_iterator_and_ext(env, ext);
         let ext_fields: Vec<_> = ext_fields.into_iter().collect();
+
+        // println!("!!!!!! {:?} {:?} {:?}", other_fields, matching_fields, ext_fields);
 
         let fields: RecordFields = match other_fields {
             OtherFields::None => {
@@ -3178,6 +3200,7 @@ fn unify_flat_type<M: MetaCollector>(
     left: &FlatType,
     right: &FlatType,
 ) -> Outcome<M> {
+    println!("unify_flat_type");
     use roc_types::subs::FlatType::*;
 
     match (left, right) {
@@ -3192,6 +3215,7 @@ fn unify_flat_type<M: MetaCollector>(
         }
 
         (Record(fields1, ext1), Record(fields2, ext2)) => {
+            // println!("unify_flat_type ({:?} {:?}) ({:?} {:?})", fields1, ext1, fields2, ext2);
             unify_record(env, pool, ctx, *fields1, *ext1, *fields2, *ext2)
         }
 
