@@ -176,6 +176,7 @@ fn loc_term_or_underscore_or_conditional<'a>(
         loc_expr_in_parens_etc_help(),
         loc!(specialize_err(EExpr::If, if_expr_help(options))),
         loc!(specialize_err(EExpr::When, when::expr_help(options))),
+        loc!(specialize_err(EExpr::Dbg, dbg_term_help(options))),
         loc!(specialize_err(EExpr::Str, string_like_literal_help())),
         loc!(specialize_err(
             EExpr::Number,
@@ -202,6 +203,7 @@ fn loc_term_or_underscore<'a>(
             EExpr::Number,
             positive_number_literal_help()
         )),
+        loc!(specialize_err(EExpr::Dbg, dbg_term_help(options))),
         loc!(specialize_err(EExpr::Closure, closure_help(options))),
         loc!(underscore_expression()),
         loc!(record_literal_help()),
@@ -218,6 +220,7 @@ fn loc_term<'a>(options: ExprParseOptions) -> impl Parser<'a, Loc<Expr<'a>>, EEx
             EExpr::Number,
             positive_number_literal_help()
         )),
+        loc!(specialize_err(EExpr::Dbg, dbg_term_help(options))),
         loc!(specialize_err(EExpr::Closure, closure_help(options))),
         loc!(record_literal_help()),
         loc!(specialize_err(EExpr::List, list_literal_help())),
@@ -2923,6 +2926,29 @@ fn dbg_help<'a>(options: ExprParseOptions) -> impl Parser<'a, Expr<'a>, EExpect<
         let (_, loc_cont, state) = parse_cont.parse(arena, state, min_indent)?;
 
         let expr = Expr::Dbg(arena.alloc(condition), arena.alloc(loc_cont));
+
+        Ok((MadeProgress, expr, state))
+    }
+}
+
+fn dbg_term_help<'a>(options: ExprParseOptions) -> impl Parser<'a, Expr<'a>, EExpect<'a>> {
+    move |arena: &'a Bump, state: State<'a>, min_indent| {
+        let start_column = state.column();
+
+        let (_, _, state) =
+            parser::keyword(keyword::DBG, EExpect::Dbg).parse(arena, state, min_indent)?;
+
+        let (_, condition, state) = space0_before_e(
+            specialize_err_ref(
+                EExpect::Condition,
+                set_min_indent(start_column + 1, expr_start(options)),
+            ),
+            EExpect::IndentCondition,
+        )
+        .parse(arena, state, start_column + 1)
+        .map_err(|(_, f)| (MadeProgress, f))?;
+
+        let expr = Expr::DbgTerm(arena.alloc(condition));
 
         Ok((MadeProgress, expr, state))
     }

@@ -300,6 +300,7 @@ mod test_snapshots {
         pass/crash.expr,
         pass/dbg.expr,
         pass/dbg_multiline.expr,
+        pass/dbg_term.expr,
         pass/def_without_newline.expr,
         pass/destructure_tag_assignment.expr,
         pass/docs.expr,

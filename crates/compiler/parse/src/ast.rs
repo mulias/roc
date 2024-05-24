@@ -469,6 +469,7 @@ pub enum Expr<'a> {
     Backpassing(&'a [Loc<Pattern<'a>>], &'a Loc<Expr<'a>>, &'a Loc<Expr<'a>>),
     Expect(&'a Loc<Expr<'a>>, &'a Loc<Expr<'a>>),
     Dbg(&'a Loc<Expr<'a>>, &'a Loc<Expr<'a>>),
+    DbgTerm(&'a Loc<Expr<'a>>),
     // This form of debug is a desugared call to roc_dbg
     LowLevelDbg(&'a (&'a str, &'a str), &'a Loc<Expr<'a>>, &'a Loc<Expr<'a>>),
 
@@ -619,6 +620,7 @@ pub fn is_expr_suffixed(expr: &Expr) -> bool {
         Expr::Expect(a, b) | Expr::Dbg(a, b) => {
             is_expr_suffixed(&a.value) || is_expr_suffixed(&b.value)
         }
+        Expr::DbgTerm(a) => is_expr_suffixed(&a.value),
         Expr::LowLevelDbg(_, a, b) => is_expr_suffixed(&a.value) || is_expr_suffixed(&b.value),
         Expr::UnaryOp(a, _) => is_expr_suffixed(&a.value),
         Expr::When(a, _) => is_expr_suffixed(&a.value),
